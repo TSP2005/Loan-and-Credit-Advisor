@@ -1,0 +1,72 @@
+RBI MASTER CIRCULAR ON HOUSING FINANCE (Summary)
+=================================================
+
+Reference: RBI/2024-25/Master Circular on Housing Finance
+Date: Updated April 2024
+
+1. INTRODUCTION
+Housing finance is a critical component of India's banking and financial system. The Reserve Bank of India (RBI) has issued comprehensive guidelines for housing loan operations by banks and housing finance companies (HFCs).
+
+2. LOAN-TO-VALUE (LTV) RATIO
+- For loans up to ₹30 lakh: Maximum LTV is 90%
+- For loans between ₹30 lakh and ₹75 lakh: Maximum LTV is 80%
+- For loans above ₹75 lakh: Maximum LTV is 75%
+- The LTV ratio determines the minimum down payment required from the borrower.
+
+3. INTEREST RATE GUIDELINES
+- Banks may offer fixed or floating rate home loans
+- Floating rates are linked to external benchmarks (EBLR/RLLR)
+- Current repo rate: 6.50% (as of 2024)
+- Typical spread: 2.0% to 3.5% over repo rate
+- Effective home loan rates range from 8.35% to 11.50% depending on borrower profile
+
+4. RISK WEIGHTS
+- Loans up to ₹30 lakh with LTV ≤ 80%: Risk weight 35%
+- Loans between ₹30-75 lakh with LTV ≤ 80%: Risk weight 35%
+- Loans above ₹75 lakh: Risk weight 50%
+- Higher LTV ratios attract higher risk weights
+
+5. ELIGIBILITY CRITERIA
+- Age: 21-65 years (at maturity)
+- Minimum employment: 2 years for salaried, 3 years for self-employed
+- Credit Score: Minimum 650 preferred; 750+ for best rates
+- Debt-to-Income (DTI) Ratio: Should not exceed 50% of net monthly income
+- FOIR (Fixed Obligations to Income Ratio): Maximum 50-60%
+
+6. DOCUMENTATION REQUIREMENTS
+For Salaried Borrowers:
+- Identity proof (Aadhaar, PAN, Passport)
+- Address proof
+- Income proof: Last 3 months salary slips + Form 16
+- Bank statements: Last 6 months
+- Property documents
+- Employment proof: Appointment letter / Experience certificate
+
+For Self-Employed Borrowers:
+- Identity and address proof
+- Business proof: GST registration, trade license
+- ITR for last 3 years
+- Audited financial statements
+- Bank statements: Last 12 months
+- Property documents
+
+7. NPA CLASSIFICATION
+- Standard Asset: Less than 90 days overdue
+- Sub-Standard Asset: 90 days to 12 months overdue
+- Doubtful Asset: More than 12 months overdue
+- Loss Asset: Identified as uncollectible
+
+8. PREPAYMENT AND FORECLOSURE
+- No prepayment penalty on floating rate home loans (RBI circular)
+- Banks cannot levy foreclosure charges on floating rate loans
+- Fixed rate loans may have prepayment charges as per bank policy
+
+9. TAX BENEFITS
+- Section 80C: Deduction on principal repayment up to ₹1.5 lakh per annum
+- Section 24(b): Deduction on interest payment up to ₹2 lakh per annum (self-occupied)
+- Section 80EEA: Additional deduction of ₹1.5 lakh for first-time homebuyers (stamp value ≤ ₹45 lakh)
+
+10. COMPLAINT AND GRIEVANCE
+- Borrowers can file complaints with RBI Ombudsman
+- Banks must have internal grievance redressal mechanism
+- RERA registration mandatory for under-construction properties

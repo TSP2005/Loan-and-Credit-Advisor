@@ -1,0 +1,85 @@
+PRADHAN MANTRI AWAS YOJANA (PMAY) - COMPREHENSIVE GUIDELINES
+=============================================================
+
+1. OVERVIEW
+PMAY is a flagship government housing scheme launched in 2015 with the vision of "Housing for All." The scheme provides affordable housing to the urban and rural poor through various components.
+
+2. PMAY-URBAN COMPONENTS
+
+Component 1: In-Situ Slum Redevelopment (ISSR)
+- For slum dwellers in urban areas
+- Central assistance of ₹1 lakh per house
+- States/UTs to provide additional subsidies
+
+Component 2: Credit Linked Subsidy Scheme (CLSS)
+- Interest subsidy on home loans for EWS, LIG, MIG-I, and MIG-II categories
+- EWS/LIG (income up to ₹6 lakh): Subsidy of 6.5% on loan up to ₹6 lakh for 20 years
+- MIG-I (income ₹6-12 lakh): Subsidy of 4% on loan up to ₹9 lakh for 20 years
+- MIG-II (income ₹12-18 lakh): Subsidy of 3% on loan up to ₹12 lakh for 20 years
+- Net Present Value (NPV) of subsidy is credited upfront to borrower's loan account
+
+Component 3: Affordable Housing in Partnership (AHP)
+- Central assistance of ₹1.5 lakh per EWS house
+- Built on public or private land
+
+Component 4: Beneficiary-led Individual House Construction (BLC)
+- Central assistance of ₹1.5 lakh for individual house construction/enhancement
+- For EWS category in urban areas
+
+3. ELIGIBILITY CRITERIA
+
+Income Categories:
+- EWS (Economically Weaker Section): Annual household income up to ₹3 lakh
+- LIG (Lower Income Group): Annual household income ₹3-6 lakh
+- MIG-I (Middle Income Group I): Annual household income ₹6-12 lakh
+- MIG-II (Middle Income Group II): Annual household income ₹12-18 lakh
+
+Basic Eligibility:
+- Beneficiary family should not own a pucca house anywhere in India
+- For CLSS: At least one female member must be co-owner (EWS/LIG)
+- Aadhaar card mandatory for identification
+- First-time home buyer preference
+
+Carpet Area Limits:
+- EWS: Up to 30 sq.m. (323 sq.ft.)
+- LIG: Up to 60 sq.m. (645 sq.ft.)
+- MIG-I: Up to 160 sq.m. (1,722 sq.ft.)
+- MIG-II: Up to 200 sq.m. (2,153 sq.ft.)
+
+4. SUBSIDY CALCULATION EXAMPLE
+
+For an LIG family taking a ₹20 lakh home loan at 9% for 20 years:
+- Without PMAY: EMI = ₹17,995/month
+- PMAY subsidy on ₹6 lakh at 6.5% for 20 years = ₹2,67,280 (NPV)
+- Effective loan reduces to ₹17,32,720
+- New EMI = ₹15,582/month
+- Monthly savings = ₹2,413
+
+5. APPLICATION PROCESS
+Step 1: Visit the nearest Common Service Centre (CSC) or bank
+Step 2: Fill PMAY application form with required documents
+Step 3: Submit Aadhaar, income proof, and property documents
+Step 4: Verification by Urban Local Body (ULB)
+Step 5: Approval and subsidy disbursement through lending institution
+
+6. REQUIRED DOCUMENTS
+- Aadhaar card (mandatory)
+- Income certificate from competent authority
+- PAN card
+- Address proof
+- Self-declaration of not owning a pucca house
+- Caste certificate (if applicable for reservation)
+- Bank account details
+
+7. PMAY-GRAMIN (Rural)
+- Target: 2.95 crore houses in rural areas
+- Assistance: ₹1.20 lakh (plain areas), ₹1.30 lakh (hilly/difficult areas)
+- Additional ₹12,000 for toilet construction under Swachh Bharat Mission
+- 90 days of employment under MGNREGA for skilled/unskilled labor
+
+8. IMPORTANT NOTES
+- Scheme extended to December 31, 2024 (PMAY-Urban 2.0 announced)
+- No income limit for rental housing under PMAY-Urban 2.0
+- Digital identification through Aadhaar-based verification
+- Geo-tagging of beneficiary houses for monitoring
+- Anti-duplication mechanism to prevent duplicate benefits
