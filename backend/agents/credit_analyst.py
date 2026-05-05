@@ -10,7 +10,6 @@ from logger import get_logger, log_action
 
 logger = get_logger("credit_analyst")
 
-
 def run_credit_analysis(user_profile: dict) -> dict:
     """
     Run credit analysis on a user profile.
@@ -64,33 +63,16 @@ def _crew_analysis(user_profile: dict) -> dict:
     )
 
     analysis_task = Task(
-        description=f"""Analyze this credit profile and provide a narrative assessment:
-
-        Annual Income: Rs.{user_profile.get('annual_income', 0):,.0f}
+        description=f"""Assess credit risk for: 
+        Income: ₹{user_profile.get('annual_income', 0):,.0f}
         Credit Score: {user_profile.get('credit_score', 0)}
-        Employment Duration: {user_profile.get('employment_months', 0)} months
-        Existing Loans: {user_profile.get('existing_loans', 0)}
-        Current EMI: Rs.{user_profile.get('existing_emi_amount', 0):,.0f}/month
-        Credit Utilization: {user_profile.get('credit_utilization', 0)}%
-        Age: {user_profile.get('age', 0)} years
-        City: {user_profile.get('city', 'Not specified')}
-        Requested Loan: Rs.{loan_amount:,.0f} ({loan_type.replace('_', ' ').title()})
-
-        Call loan_risk_scorer with EXACTLY these values:
-        - annual_income={user_profile.get('annual_income', 0)}
-        - credit_score={user_profile.get('credit_score', 0)}
-        - age={user_profile.get('age', 25)}
-        - existing_emi={user_profile.get('existing_emi_amount', 0)}
-        - loan_amount={loan_amount}
-        - loan_type={loan_type}
-
-        Then provide a JSON with narrative analysis only:
-        - analysis_summary (2-3 sentences: overall picture, key risks/strengths)
-        - strengths (list of positive factors)
-        - weaknesses (list of risk factors and concerns)
-        """,
-        expected_output="A JSON object with analysis_summary, strengths, and weaknesses",
-        agent=credit_analyst_agent
+        Employment: {user_profile.get('employment_months', 0)}mo
+        Existing EMI: ₹{user_profile.get('existing_emi_amount', 0):,.0f}
+        Requested: ₹{loan_amount:,.0f} {loan_type}
+        
+        Use loan_risk_scorer with the profile above.
+        Return JSON: {{analysis_summary, strengths[], weaknesses[]}}""",
+        expected_output="JSON with analysis_summary (2-3 sentences), strengths, weaknesses"
     )
 
     crew = Crew(agents=[credit_analyst_agent], tasks=[analysis_task], verbose=False)

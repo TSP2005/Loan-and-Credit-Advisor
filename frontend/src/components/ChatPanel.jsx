@@ -3,11 +3,38 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { createChatSocket, sendLog } from '../api/client';
 
+// ─── Browser Notification helper ─────────────────────────────────────────────
+function fireLoanNotification(loanType, loanAmount) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+
+  const amountStr = loanAmount
+    ? `₹${Number(loanAmount).toLocaleString('en-IN')}`
+    : '';
+  const title = '🏦 Loan Assessment Ready!';
+  const body = `Your ${loanType}${amountStr ? ` (${amountStr})` : ''} report has been generated.`;
+
+  const n = new Notification(title, {
+    body,
+    icon: '/vite.svg',
+    badge: '/vite.svg',
+    tag: 'loan-report',       // Replaces any previous notification of same tag
+    requireInteraction: false,
+    silent: false,
+  });
+
+  n.onclick = () => { window.focus(); n.close(); };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function ChatPanel({ userId, token, sessionId }) {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [ws, setWs] = useState(null);
+  // In-app toast shown when tab IS focused and a loan report arrives
+  const [toast, setToast] = useState(null);
+  const toastTimer = useRef(null);
   const bottomRef = useRef(null);
 
   // When sessionId changes, reconnect websocket and load that session's messages
@@ -43,6 +70,20 @@ export default function ChatPanel({ userId, token, sessionId }) {
           setIsTyping(false);
           setMessages((prev) => [...prev, { role: 'bot', content: data.content }]);
           sendLog('info', 'ChatPanel', 'MESSAGE_RECEIVED', `type=${data.type} length=${data.content?.length}`);
+
+          // ── Loan report notification ──────────────────────────────────────
+          if (data.notification_type === 'loan_report') {
+            if (document.hidden) {
+              // Tab is not focused → fire OS-level browser notification
+              fireLoanNotification(data.loan_type || 'Loan', data.loan_amount);
+            } else {
+              // Tab IS focused → show in-app toast banner instead
+              clearTimeout(toastTimer.current);
+              setToast({ loanType: data.loan_type, loanAmount: data.loan_amount });
+              toastTimer.current = setTimeout(() => setToast(null), 5000);
+            }
+          }
+          // ─────────────────────────────────────────────────────────────────
         }
       },
       (err) => {
@@ -51,7 +92,7 @@ export default function ChatPanel({ userId, token, sessionId }) {
       }
     );
     setWs(socket);
-    return () => { socket.close(); };
+    return () => { socket.close(); clearTimeout(toastTimer.current); };
   }, [userId, sessionId]);
 
   useEffect(() => {
@@ -75,9 +116,47 @@ export default function ChatPanel({ userId, token, sessionId }) {
     }
   };
 
+  // ── In-app toast banner ────────────────────────────────────────────────────
+  const ToastBanner = () => {
+    if (!toast) return null;
+    const amountStr = toast.loanAmount
+      ? `₹${Number(toast.loanAmount).toLocaleString('en-IN')}`
+      : '';
+    return (
+      <div style={{
+        position: 'absolute',
+        top: '12px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 100,
+        background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+        color: '#fff',
+        borderRadius: '12px',
+        padding: '10px 20px',
+        fontSize: '0.88rem',
+        fontWeight: 600,
+        boxShadow: '0 8px 32px rgba(99,102,241,0.45)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        animation: 'fadeInDown 0.3s ease',
+        whiteSpace: 'nowrap',
+      }}>
+        <span style={{ fontSize: '1.2rem' }}>🏦</span>
+        {toast.loanType}{amountStr ? ` (${amountStr})` : ''} assessment complete!
+        <button
+          onClick={() => setToast(null)}
+          style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', opacity: 0.7, fontSize: '1rem', padding: 0, marginLeft: '4px' }}
+        >✕</button>
+      </div>
+    );
+  };
+  // ──────────────────────────────────────────────────────────────────────────
+
   if (messages.length === 0 && !isTyping) {
     return (
-      <div className="chat-container">
+      <div className="chat-container" style={{ position: 'relative' }}>
+        <ToastBanner />
         <div className="chat-welcome">
           <span className="welcome-icon">🤖</span>
           <h2>Welcome to AI Loan &amp; Credit Advisor</h2>
@@ -101,7 +180,8 @@ export default function ChatPanel({ userId, token, sessionId }) {
   }
 
   return (
-    <div className="chat-container">
+    <div className="chat-container" style={{ position: 'relative' }}>
+      <ToastBanner />
       <div className="chat-messages">
         {messages.map((msg, i) => (
           <div key={i} className={`chat-message ${msg.role}`}>

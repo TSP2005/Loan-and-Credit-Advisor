@@ -28,12 +28,25 @@ export default function DashboardPage() {
   const [activeSessionId, setActiveSessionId] = useState(null);
   const [sessionToDelete, setSessionToDelete] = useState(null);
 
+  // Notification permission + service worker registration
+  const [notifPermission, setNotifPermission] = useState(
+    typeof Notification !== 'undefined' ? Notification.permission : 'denied'
+  );
+
+  useEffect(() => {
+    // Register service worker for notification click handling
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
+
   useEffect(() => {
     if (user && token) {
       loadProfile();
       loadSessions();
     }
   }, [user, token]);
+
 
   // Close popup when clicking outside
   useEffect(() => {
@@ -160,7 +173,67 @@ export default function DashboardPage() {
 
   return (
     <div className="app-container">
-      {/* Sidebar */}
+      {/* Notification permission soft prompt */}
+      {notifPermission === 'default' && (
+        <div style={{
+          position: 'fixed',
+          top: '16px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999,
+          background: 'linear-gradient(135deg, #1e1b4b, #312e81)',
+          border: '1px solid rgba(99,102,241,0.4)',
+          borderRadius: '14px',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '14px',
+          boxShadow: '0 12px 40px rgba(0,0,0,0.5)',
+          animation: 'fadeInDown 0.4s ease',
+          maxWidth: '520px',
+          width: '90%',
+        }}>
+          <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>🔔</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#e0e7ff' }}>
+              Get notified when your loan report is ready
+            </div>
+            <div style={{ fontSize: '0.78rem', color: 'rgba(199,210,254,0.7)', marginTop: '2px' }}>
+              Loan assessments take ~15–30s. We'll notify you even if you switch tabs.
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+            <button
+              onClick={async () => {
+                const perm = await Notification.requestPermission();
+                setNotifPermission(perm);
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+                border: 'none', borderRadius: '8px',
+                color: '#fff', padding: '7px 14px',
+                fontSize: '0.82rem', fontWeight: 700,
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              Allow
+            </button>
+            <button
+              onClick={() => setNotifPermission('denied')}
+              style={{
+                background: 'rgba(255,255,255,0.07)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '8px', color: 'rgba(199,210,254,0.6)',
+                padding: '7px 12px', fontSize: '0.82rem',
+                cursor: 'pointer',
+              }}
+            >
+              Not now
+            </button>
+          </div>
+        </div>
+      )}
+
       <aside className="sidebar">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>

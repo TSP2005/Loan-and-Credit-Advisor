@@ -168,7 +168,7 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
                 })
 
                 # Run orchestrator with correct session history
-                response = await _run_orchestrator(
+                response, result = await _run_orchestrator(
                     user_id, user_message,
                     profile or {},
                     session_memory[mem_key]
@@ -199,11 +199,22 @@ async def websocket_chat(websocket: WebSocket, user_id: str):
                            f"user_id={user_id} | session_id={session_id} | total_messages={len(session_memory[mem_key])}")
                 _save_memory()
 
-                await websocket.send_text(json.dumps({
+                # Determine if this is a loan report that warrants a push notification
+                intent = result.get("intent", "") if isinstance(result, dict) else ""
+                loan_request = result.get("loan_request") or {} if isinstance(result, dict) else {}
+                notification_type = "loan_report" if intent == "loan_inquiry" else None
+
+                ws_payload = {
                     "type": "message",
                     "content": response,
-                    "user_id": user_id
-                }))
+                    "user_id": user_id,
+                }
+                if notification_type:
+                    ws_payload["notification_type"] = notification_type
+                    ws_payload["loan_type"] = loan_request.get("loan_type", "loan").replace("_", " ").title()
+                    ws_payload["loan_amount"] = loan_request.get("requested_amount", 0)
+
+                await websocket.send_text(json.dumps(ws_payload))
 
                 log_action(logger, "info", "chat_router", "WEBSOCKET_MESSAGE_OUT",
                            f"user_id={user_id} | content_length={len(response)}")
@@ -237,8 +248,10 @@ async def clear_memory(user_id: str):
 
 
 async def _run_orchestrator(user_id: str, message: str, profile: dict,
-                            history: list) -> str:
-    """Run the LangGraph orchestrator with full conversation context."""
+                            history: list) -> tuple:
+    """Run the LangGraph orchestrator with full conversation context.
+    Returns (response_str, result_dict) so callers can access intent/loan_request.
+    """
     from langchain_core.messages import HumanMessage, AIMessage
     from orchestrator.graph import orchestrator_graph
 
@@ -285,4 +298,4 @@ async def _run_orchestrator(user_id: str, message: str, profile: dict,
                f"user_id={user_id} | intent={result.get('intent', 'unknown')} | "
                f"flow={result.get('flow', 'unknown')} | response_length={len(response)}")
 
-    return response
+    return response, result

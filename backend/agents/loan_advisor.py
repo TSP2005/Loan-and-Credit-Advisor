@@ -66,32 +66,18 @@ def _crew_advisory(credit_profile: dict, loan_type: str,
     )
 
     advisory_task = Task(
-        description=f"""Compare loan products for this borrower:
-
-        BORROWER PROFILE:
-        - Risk Tier: {credit_profile.get('risk_tier', 'Medium')}
-        - Credit Tier: {credit_profile.get('credit_tier', 'Good')}
-        - DTI Ratio: {credit_profile.get('dti_ratio', 0)}%
-        - Max EMI Capacity: ₹{credit_profile.get('max_emi_capacity', 0):,.0f}/month
-        - Monthly Income: ₹{credit_profile.get('monthly_income', 0):,.0f}
-
-        LOAN REQUEST:
-        - Type: {loan_type}
-        - Amount: ₹{requested_amount:,.0f}
-        - Tenure: {requested_tenure} months
-
-        Use the rate predictor tool to get rate bands for {loan_type}.
-        Use the EMI calculator tool to calculate EMIs at different rates.
+        description=f"""Compare {loan_type} products for a borrower with:
+        Risk Tier: {credit_profile.get('risk_tier')}, DTI: {credit_profile.get('dti_ratio')}%
+        Max EMI: ₹{credit_profile.get('max_emi_capacity', 0):,.0f}/month
+        Requested: ₹{requested_amount:,.0f} for {requested_tenure}mo
         
-        Compare at least 3 options (best case, average case, and a shorter tenure option).
+        Process:
+        1. Call rate_predictor(loan_type="{loan_type}") → get rate bands
+        2. For each rate, call emi_calculator(principal={requested_amount}, annual_rate_percent=X, tenure_months={requested_tenure})
+        3. Compare 2-3 best options by rate and affordability
         
-        Provide response as JSON with:
-        - products (list of objects with: bank_name, rate, emi, total_interest, total_cost, tenure_months, pros, cons)
-        - recommendation (string - which product and why)
-        - affordability_verdict (string - whether borrower can afford the requested loan)
-        """,
-        expected_output="A JSON comparison of loan products with recommendation",
-        agent=advisor_agent
+        Return JSON: {{products: [{{bank, rate, emi, total_cost, tenure_months, pros, cons}}], recommendation, affordability_verdict}}""",
+        expected_output="JSON comparison with 2-3 products and recommendation"
     )
 
     crew = Crew(agents=[advisor_agent], tasks=[advisory_task], verbose=False)

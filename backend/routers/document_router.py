@@ -105,7 +105,13 @@ def _extract_and_update(file_path: str, user_id: str) -> dict:
             parser = JsonOutputParser(pydantic_object=FinancialExtraction)
 
             prompt = PromptTemplate(
-                template="Extract the exact financial profile figures from the following document. Do NOT hallucinate. Keep numbers pure (no commas). If a value is not found, leave it explicitly null.\n\n{format_instructions}\n\nDocument text:\n{context}\n",
+                template=(
+                    "Extract financial data from this document. "
+                    "**Rules**: Return null for missing values. Do not infer or estimate. "
+                    "Only extract explicitly stated numbers.\n\n"
+                    "{format_instructions}\n\n"
+                    "Document:\n{context}\n"
+                ),
                 input_variables=["context"],
                 partial_variables={"format_instructions": parser.get_format_instructions()},
             )
