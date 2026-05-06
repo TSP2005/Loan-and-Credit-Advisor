@@ -27,9 +27,11 @@ class OrchestratorState(TypedDict):
 
     # Request context
     loan_request: Optional[dict]
+    report_topic: Optional[str]   # For send_report intent: free-form topic or None
+    send_report_after: Optional[bool]  # True when user wants loan answer + report in same message
 
     # Routing
-    intent: str  # loan_inquiry, policy_question, profile_update, general
+    intent: str  # loan_inquiry, policy_question, profile_update, send_report, general
     flow: str    # current stage in the flow
 
     # Final output

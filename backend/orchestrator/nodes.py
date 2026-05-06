@@ -69,8 +69,46 @@ def intent_classifier_node(state: dict) -> dict:
             "_amount_from_message": amount_from_message,
         }
 
+    # Always propagate report_topic (may be None for non-report intents)
+    updates["report_topic"] = extracted.get("report_topic")
+
+    # ── Dual-intent detection ─────────────────────────────────────────────────
+    # If the user asks for both a loan assessment AND a report in the same message,
+    # run the full loan pipeline and ALSO send the report afterwards.
+    import re as _re
+    _report_kw = [
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?(?:detail(?:ed)?\s+)?report\b',
+        r'\bemail\s+(?:me\s+)?(?:a\s+)?report\b',
+        r'\bmail\s+(?:me\s+)?(?:the\s+)?report\b',
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?summary\b',
+        r'\bemail\s+me\s+this\b',
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?pdf\b',
+    ]
+    _msg_lower = last_msg.lower()
+    _has_report_kw = any(_re.search(p, _msg_lower) for p in _report_kw)
+
+    if intent == "loan_inquiry" and _has_report_kw:
+        # Loan + report in one message: answer in chat AND send report email
+        updates["send_report_after"] = True
+        updates["report_topic"] = extracted.get("report_topic")
+        log_action(logger, "info", "nodes", "DUAL_INTENT_DETECTED",
+                   f"loan_inquiry + send_report | send_report_after=True")
+    elif intent == "send_report" and any(
+        _re.search(p, _msg_lower) for p in [
+            r'\bloan\b', r'\bhome\b', r'\bpersonal\b', r'\bcar\b', r'\bemi\b'
+        ]
+    ):
+        # send_report with loan keywords → treat as loan_inquiry + report
+        updates["intent"] = "loan_inquiry"
+        updates["send_report_after"] = True
+        log_action(logger, "info", "nodes", "DUAL_INTENT_UPGRADED",
+                   f"send_report → loan_inquiry + send_report_after=True")
+    else:
+        updates["send_report_after"] = False
+    # ─────────────────────────────────────────────────────────────────────────
+
     log_action(logger, "info", "nodes", "NODE_EXECUTED",
-               f"node=intent_classifier | message={last_msg[:60]}... | intent={intent} | "
+               f"node=intent_classifier | message={last_msg[:60]}... | intent={updates['intent']} | "
                f"history_len={len(history)}")
 
     return updates
@@ -144,7 +182,16 @@ def profile_collector_node(state: dict) -> dict:
     user_profile = state.get("user_profile") or {}
 
     required_fields = ["annual_income", "credit_score", "employment_months", "existing_loans"]
-    missing = [f for f in required_fields if not user_profile.get(f)]
+    # existing_loans=0 is valid (no existing loans). Only treat as missing if None/absent.
+    # For income, credit_score, employment_months — 0 is genuinely invalid.
+    def _is_missing(field, val):
+        if val is None:
+            return True
+        if field in ("existing_loans", "existing_emi_amount"):
+            return False   # 0 is valid
+        return not val    # 0 is invalid for income/score/employment
+
+    missing = [f for f in required_fields if _is_missing(f, user_profile.get(f))]
 
     is_complete = len(missing) == 0
 
@@ -599,3 +646,35 @@ def _format_loan_response(state: dict) -> str:
             parts.append(f"- Expected: {step.get('expected_improvement', 'N/A')}\n")
 
     return "\n".join(parts)
+
+
+# ─── Email Report Node ────────────────────────────────────────────────────────
+def email_report_node(state: dict) -> dict:
+    """Compile conversation into a detailed HTML+PDF report and email it.
+    When called after response_formatter (dual-intent), appends the confirmation
+    to the existing loan assessment response rather than replacing it.
+    """
+    from agents.report_compiler import compile_and_send_report
+
+    log_action(logger, "info", "nodes", "NODE_EXECUTED",
+               f"node=email_report | user={state.get('user_id')} | "
+               f"topic={state.get('report_topic')} | "
+               f"send_report_after={state.get('send_report_after')} | "
+               f"history_len={len(state.get('conversation_history') or [])}")
+
+    result = compile_and_send_report(state)
+    report_msg = result["message"]
+
+    # Dual-intent: loan answer already in agent_response → append report status
+    if state.get("send_report_after") and state.get("agent_response"):
+        combined = (
+            state["agent_response"]
+            + "\n\n---\n"
+            + report_msg
+        )
+        return {"agent_response": combined, "flow": "report_sent"}
+
+    # Standalone send_report → just the report confirmation
+    return {"agent_response": report_msg, "flow": "report_sent"}
+
+

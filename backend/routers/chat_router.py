@@ -283,6 +283,9 @@ async def _run_orchestrator(user_id: str, message: str, profile: dict,
         "improvement_plan": None,
         "rag_results": None,
         "loan_request": None,
+        "report_topic": None,
+        "send_report_after": False,
+
         "intent": "",
         "flow": "start",
         "agent_response": ""

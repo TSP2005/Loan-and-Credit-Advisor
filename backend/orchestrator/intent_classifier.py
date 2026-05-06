@@ -22,18 +22,27 @@ Given a user message (and optional conversation history), return a JSON object �
 
 ## JSON Schema
 {
-  "intent": one of ["loan_inquiry", "policy_question", "profile_update", "general"],
+  "intent": one of ["loan_inquiry", "policy_question", "profile_update", "send_report", "general"],
   "loan_amount": <number in Indian Rupees, or null if not mentioned>,
   "loan_type": one of ["home_loan","personal_loan","car_loan","business_loan","education_loan","gold_loan","mudra_loan","unknown"],
   "tenure_months": <integer, or null if not mentioned>,
-  "amount_from_message": <true if loan_amount was explicitly stated in the CURRENT message, false otherwise>
+  "amount_from_message": <true if loan_amount was explicitly stated in the CURRENT message, false otherwise>,
+  "report_topic": <free-form string describing what the report should focus on, or null for full conversation report>
 }
 
 ## Intent Definitions
 - **loan_inquiry**: ONLY use this if the user is explicitly requesting a brand new loan amount OR asking to recalculate/compare an EMI with new numbers. Do NOT use this for conversational follow-ups.
 - **policy_question**: User asks about government schemes (PMAY, MUDRA), RBI rules, tax benefits, document requirements, eligibility criteria, credit score improvement tips, or follow-up questions about WHY something was approved/rejected.
 - **profile_update**: User is directly providing their personal financial data to update their profile (e.g. "my income is 5 lakhs", "I work for 2 years", "my credit score is 720").
-- **general**: CRITICAL - Use this for arguments ("but you said..."), clarifications, greetings, chit-chat, or any follow-up question that does not explicitly ask to rerun a loan calculation.
+- **send_report**: User wants to email/send a report or summary. Trigger phrases: "send me a report", "email me", "send report", "mail me", "email my report", "send a summary", "send report on [topic]", "email me report about [topic]". Extract the topic into report_topic.
+- **general**: CRITICAL - Use this for arguments, clarifications, greetings, chit-chat, or any follow-up question that does not explicitly ask to rerun a loan calculation.
+
+## report_topic Rules (only when intent=send_report)
+- "send me a report" → report_topic: null
+- "send report on my home loan" → report_topic: "home_loan"
+- "send report why pmay not eligible" → report_topic: "pmay eligibility"
+- "email me report about mudra scheme" → report_topic: "mudra scheme"
+- "send a summary of this conversation" → report_topic: null
 
 ## Amount Rules
 - "50000" → 50000
@@ -103,7 +112,7 @@ def classify_intent_llm(message: str, history: list = None) -> dict:
         result = json.loads(raw)
 
         # Validate and normalise
-        valid_intents = {"loan_inquiry", "policy_question", "profile_update", "general"}
+        valid_intents = {"loan_inquiry", "policy_question", "profile_update", "send_report", "general"}
         valid_types = {"home_loan", "personal_loan", "car_loan", "business_loan",
                        "education_loan", "gold_loan", "mudra_loan", "unknown"}
 
@@ -133,6 +142,7 @@ def classify_intent_llm(message: str, history: list = None) -> dict:
                 tenure = None
 
         amount_from_message = bool(result.get("amount_from_message", loan_amount is not None))
+        report_topic = result.get("report_topic")  # free-form string or None
 
         parsed = {
             "intent": intent,
@@ -140,6 +150,7 @@ def classify_intent_llm(message: str, history: list = None) -> dict:
             "loan_type": loan_type,
             "tenure_months": tenure,
             "amount_from_message": amount_from_message,
+            "report_topic": report_topic,
         }
 
         log_action(logger, "info", "intent_classifier", "LLM_CLASSIFIED",
@@ -195,13 +206,24 @@ def _regex_classify(message: str) -> dict:
     """Regex-based fallback classifier."""
     msg = message.lower()
 
-    scores = {"loan_inquiry": 0, "policy_question": 0, "profile_update": 0, "general": 1}
+    scores = {"loan_inquiry": 0, "policy_question": 0, "profile_update": 0, "send_report": 0, "general": 1}
     for p in _LOAN_KW:
         if re.search(p, msg): scores["loan_inquiry"] += 2
     for p in _POLICY_KW:
         if re.search(p, msg): scores["policy_question"] += 2
     for p in _PROFILE_KW:
         if re.search(p, msg): scores["profile_update"] += 2
+    # Report / email keywords
+    _REPORT_KW = [
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?report\b',
+        r'\bemail\s+(?:me\s+)?(?:a\s+)?report\b',
+        r'\bmail\s+(?:me\s+)?(?:the\s+)?report\b',
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?summary\b',
+        r'\bemail\s+me\s+this\b',
+        r'\bsend\s+(?:me\s+)?(?:a\s+)?pdf\b',
+    ]
+    for p in _REPORT_KW:
+        if re.search(p, msg): scores["send_report"] += 5
     if re.search(r'[₹$]\s*\d+|\d+\s*(?:lakh|crore|lac)\b', msg):
         scores["loan_inquiry"] += 3
 

@@ -16,6 +16,11 @@ class Settings:
     # API Keys
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
 
+    # Email (Gmail SMTP)
+    GMAIL_SENDER: str = os.getenv("GMAIL_SENDER", "satyapranav1234@gmail.com")
+    GMAIL_APP_PASSWORD: str = os.getenv("GMAIL_APP_PASSWORD", "")
+
+
     # Security
     SECRET_KEY: str = os.getenv("SECRET_KEY", "default_secret_key_change_me")
     ALGORITHM: str = "HS256"
